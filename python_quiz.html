@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f14">
+<title>Python 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f14;--surface:#1a1a24;--surface2:#22222f;--border:#2e2e3e;--accent:#7c6ff7;--accent2:#a89cf7;--green:#4ade80;--green-bg:#0d2b1a;--red:#f87171;--red-bg:#2b0d0d;--amber:#fbbf24;--text:#e8e8f0;--muted:#7070a0;--mono:'DM Mono',monospace;--sans:'Noto Sans KR',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;overscroll-behavior:none;}
+
+/* ── 홈 ── */
+#screen-home{min-height:100dvh;display:flex;flex-direction:column;padding:2.5rem 1.5rem 2rem;}
+.home-top{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.logo{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:1.25rem;}
+.home-title{font-size:clamp(2rem,8vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:.5rem;background:linear-gradient(135deg,#e8e8f0 40%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.home-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.75rem;}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;}
+.stat-box{background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:.75rem .5rem;text-align:center;}
+.stat-num{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent2);display:block;margin-bottom:3px;}
+.stat-label{font-size:11px;color:var(--muted);}
+.section-label{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.tag-btn{padding:5px 12px;font-size:11px;font-family:var(--mono);border:.5px solid var(--border);border-radius:99px;background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;}
+.tag-btn.active{background:rgba(124,111,247,.15);border-color:var(--accent);color:var(--accent2);}
+.tag-all.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.tag-wrong.active{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
+.n-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:1.5rem;}
+.n-btn{background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:9px 0;font-size:12px;font-family:var(--mono);color:var(--muted);cursor:pointer;transition:all .15s;}
+.n-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.start-btn{width:100%;padding:1rem;background:var(--accent);border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);transition:opacity .15s,transform .1s;}
+.start-btn:active{opacity:.85;transform:scale(.98);}
+
+/* ── 퀴즈 ── */
+#screen-quiz{display:none;min-height:100dvh;flex-direction:column;}
+.quiz-header{padding:1rem 1.25rem .75rem;display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:.5px solid var(--border);}
+.progress-bg{flex:1;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s ease;}
+.hdr-score{font-family:var(--mono);font-size:13px;color:var(--muted);white-space:nowrap;}
+.hdr-num{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;}
+.quiz-body{flex:1;padding:1.25rem 1.25rem 6rem;overflow-y:auto;}
+.unit-label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;display:flex;align-items:center;gap:6px;}
+.unit-label::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.6;}
+.wrong-count-badge{font-size:10px;font-family:var(--mono);color:var(--red);background:var(--red-bg);border:.5px solid var(--red);border-radius:99px;padding:2px 7px;margin-left:auto;}
+.type-chip{display:inline-flex;align-items:center;font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px;margin-bottom:1rem;border:.5px solid;}
+.chip-mc{color:var(--accent2);border-color:var(--accent);background:rgba(124,111,247,.1);}
+.chip-fill{color:#5eead4;border-color:#0d9488;background:rgba(20,184,166,.1);}
+.chip-ox{color:var(--amber);border-color:#b45309;background:rgba(251,191,36,.1);}
+.q-text{font-size:15px;font-weight:500;line-height:1.65;color:var(--text);margin-bottom:.5rem;white-space:pre-wrap;}
+.q-code{background:var(--surface2);border:.5px solid var(--border);border-radius:10px;padding:.875rem 1rem;font-family:var(--mono);font-size:12.5px;color:#c0c0e0;margin:.75rem 0 1.25rem;line-height:1.7;white-space:pre;overflow-x:auto;}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:.25rem;}
+.choice{background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:.875rem 1rem;font-size:14px;color:var(--text);text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .12s,border-color .12s;font-family:var(--sans);}
+.choice:active:not(:disabled){background:var(--surface2);}
+.choice-lbl{width:26px;height:26px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);flex-shrink:0;}
+.choice.correct{background:var(--green-bg);border-color:var(--green);}
+.choice.correct .choice-lbl{background:var(--green);color:#000;}
+.choice.wrong{background:var(--red-bg);border-color:var(--red);}
+.choice.wrong .choice-lbl{background:var(--red);color:#000;}
+.choice:disabled{cursor:default;}
+.ox-row{display:flex;gap:12px;margin-top:.25rem;}
+.ox-btn{flex:1;padding:1.5rem 0;font-size:26px;background:var(--surface);border:.5px solid var(--border);border-radius:16px;cursor:pointer;transition:background .12s;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ox-btn span{font-size:12px;font-family:var(--mono);color:var(--muted);}
+.ox-btn:active:not(:disabled){background:var(--surface2);}
+.ox-btn.correct{background:var(--green-bg);border-color:var(--green);}
+.ox-btn.wrong{background:var(--red-bg);border-color:var(--red);}
+.ox-btn:disabled{cursor:default;}
+.fill-wrap{margin-top:.25rem;display:flex;flex-direction:column;gap:10px;}
+.fill-input{width:100%;background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:.875rem 1rem;font-size:15px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s;}
+.fill-input:focus{border-color:var(--accent);}
+.fill-input:disabled{opacity:.6;}
+.confirm-btn{width:100%;padding:.875rem;background:var(--surface2);border:.5px solid var(--border);border-radius:12px;font-size:15px;font-weight:500;color:var(--text);cursor:pointer;font-family:var(--sans);}
+.feedback-box{margin-top:1rem;padding:1rem;border-radius:12px;font-size:13px;line-height:1.7;display:none;border:.5px solid;}
+.feedback-box.correct{background:var(--green-bg);border-color:#166534;color:#bbf7d0;}
+.feedback-box.wrong{background:var(--red-bg);border-color:#7f1d1d;color:#fecaca;}
+.fb-title{font-weight:700;margin-bottom:6px;font-size:14px;}
+.fb-ans{margin-bottom:5px;opacity:.85;font-family:var(--mono);}
+.fb-exp{opacity:.8;}
+.quiz-footer{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 80%,transparent);}
+.next-btn{width:100%;padding:1rem;background:var(--accent);border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);display:none;transition:opacity .15s,transform .1s;}
+.next-btn:active{opacity:.85;transform:scale(.98);}
+
+/* ── 결과 ── */
+#screen-result{display:none;min-height:100dvh;flex-direction:column;padding:3rem 1.5rem 2rem;}
+.result-emoji{font-size:52px;margin-bottom:1rem;text-align:center;}
+.result-score-big{font-family:var(--mono);font-size:clamp(3rem,15vw,5rem);font-weight:500;color:var(--accent2);text-align:center;line-height:1;}
+.result-denom{font-size:1.5rem;color:var(--muted);}
+.result-pct{text-align:center;font-size:14px;color:var(--muted);font-family:var(--mono);margin:.5rem 0 1rem;}
+.result-msg{text-align:center;font-size:15px;color:var(--text);margin-bottom:1.75rem;line-height:1.6;}
+.result-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
+.btn-retry{padding:1rem;background:var(--accent);border:none;border-radius:14px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);}
+.btn-home{padding:1rem;background:var(--surface);border:.5px solid var(--border);border-radius:14px;font-size:15px;color:var(--muted);cursor:pointer;font-family:var(--sans);}
+
+/* ── 오답 선택 & 복사 ── */
+.wrong-section{border-top:.5px solid var(--border);padding-top:1.5rem;}
+.wrong-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.wrong-section-title{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);}
+.select-all-btn{font-size:12px;font-family:var(--mono);color:var(--accent2);background:none;border:none;cursor:pointer;padding:4px 8px;}
+.wrong-items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;}
+.wrong-item-card{background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:.75rem 1rem;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:border-color .15s;}
+.wrong-item-card.selected{border-color:var(--accent);background:rgba(124,111,247,.08);}
+.wrong-item-check{width:20px;height:20px;border-radius:5px;border:.5px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:11px;}
+.wrong-item-card.selected .wrong-item-check{background:var(--accent);border-color:var(--accent);color:#fff;}
+.wrong-item-content{flex:1;}
+.wrong-item-unit{font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:3px;}
+.wrong-item-q{font-size:13px;color:var(--text);line-height:1.5;}
+.wrong-item-cnt{font-size:10px;font-family:var(--mono);color:var(--red);margin-top:3px;}
+.copy-selected-btn{width:100%;padding:.875rem;background:rgba(124,111,247,.15);border:.5px solid var(--accent);border-radius:12px;font-size:14px;font-weight:500;color:var(--accent2);cursor:pointer;font-family:var(--sans);transition:background .15s;display:none;}
+.copy-selected-btn.visible{display:block;}
+.copy-selected-btn:active{background:rgba(124,111,247,.25);}
+
+/* ── 오답 노트 화면 ── */
+#screen-wrongnote{display:none;min-height:100dvh;flex-direction:column;}
+.note-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;border-bottom:.5px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10;}
+.note-back{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;}
+.note-title{font-size:15px;font-weight:500;color:var(--text);}
+.note-body{flex:1;padding:1.25rem;overflow-y:auto;padding-bottom:4rem;}
+.note-empty{text-align:center;color:var(--muted);font-size:14px;margin-top:3rem;line-height:1.8;}
+.note-item{background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:10px;}
+.note-item-top{display:flex;align-items:center;gap:8px;margin-bottom:.5rem;}
+.note-item-unit{font-size:10px;font-family:var(--mono);color:var(--muted);}
+.note-item-cnt{font-size:11px;font-family:var(--mono);color:var(--red);background:var(--red-bg);border:.5px solid var(--red);border-radius:99px;padding:2px 8px;margin-left:auto;}
+.note-item-q{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:.5rem;}
+.note-item-ans{font-size:12px;font-family:var(--mono);color:var(--green);opacity:.8;}
+</style>
+</head>
+<body>
+
+<!-- ── 홈 ── -->
+<div id="screen-home">
+  <div class="home-top">
+    <div class="logo">🐍 Python Quiz</div>
+    <h1 class="home-title">Python<br>기초 문법</h1>
+    <p class="home-sub">객관식 · 빈칸 · OX · 출력예측<br>총 270문제 랜덤 출제</p>
+    <div class="stat-row">
+      <div class="stat-box"><span class="stat-num">270</span><span class="stat-label">총 문제</span></div>
+      <div class="stat-box"><span class="stat-num" id="wrong-count-home">0</span><span class="stat-label">오답 누적</span></div>
+      <div class="stat-box"><span class="stat-num" id="best-score">—</span><span class="stat-label">최고점수</span></div>
+    </div>
+
+    <div class="section-label">모드</div>
+    <div class="tag-row" id="tag-row">
+      <button class="tag-btn tag-all active" onclick="toggleTag('all',this)">전체</button>
+      <button class="tag-btn tag-wrong" onclick="toggleTag('wrong',this)">❌ 오답만</button>
+      <button class="tag-btn" onclick="toggleTag('string',this)">문자열</button>
+      <button class="tag-btn" onclick="toggleTag('list',this)">리스트</button>
+      <button class="tag-btn" onclick="toggleTag('loop',this)">반복문</button>
+      <button class="tag-btn" onclick="toggleTag('basic',this)">기초문법</button>
+      <button class="tag-btn" onclick="toggleTag('file',this)">파일/기타</button>
+      <button class="tag-btn" onclick="toggleTag('hangman',this)">행맨</button>
+    </div>
+
+    <div class="section-label">문제 수</div>
+    <div class="n-row">
+      <button class="n-btn" onclick="setN(10,this)">10</button>
+      <button class="n-btn active" onclick="setN(20,this)">20</button>
+      <button class="n-btn" onclick="setN(50,this)">50</button>
+      <button class="n-btn" onclick="setN(100,this)">100</button>
+      <button class="n-btn" onclick="setN(9999,this)">전부</button>
+    </div>
+
+    <button class="tag-btn" style="margin-bottom:1rem;width:100%;text-align:center;padding:10px;" onclick="showWrongNote()">📒 오답 노트 보기</button>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">시작하기</button>
+</div>
+
+<!-- ── 퀴즈 ── -->
+<div id="screen-quiz">
+  <div class="quiz-header">
+    <span class="hdr-num" id="hdr-num">1/20</span>
+    <div class="progress-bg"><div class="progress-fill" id="prog" style="width:5%"></div></div>
+    <span class="hdr-score" id="hdr-score">0점</span>
+  </div>
+  <div class="quiz-body" id="quiz-body"></div>
+  <div class="quiz-footer">
+    <button class="next-btn" id="next-btn" onclick="nextQ()">다음 문제 →</button>
+  </div>
+</div>
+
+<!-- ── 결과 ── -->
+<div id="screen-result">
+  <div class="result-emoji" id="res-emoji">🏆</div>
+  <div class="result-score-big" id="res-score">0<span class="result-denom">/20</span></div>
+  <div class="result-pct" id="res-pct">정답률 0%</div>
+  <div class="result-msg" id="res-msg"></div>
+  <div class="result-btns">
+    <button class="btn-retry" onclick="retryQuiz()">같은 설정으로 다시 풀기</button>
+    <button class="btn-home" onclick="goHome()">홈으로</button>
+  </div>
+  <div class="wrong-section" id="wrong-section"></div>
+</div>
+
+<!-- ── 오답 노트 ── -->
+<div id="screen-wrongnote">
+  <div class="note-header">
+    <button class="note-back" onclick="show('screen-home')">←</button>
+    <span class="note-title">📒 오답 노트</span>
+  </div>
+  <div class="note-body" id="note-body"></div>
+</div>
+
+<script>
+// ══ 태그 한글명 ══
+const TAG_NAMES = {
+  string:'문자열', list:'리스트', loop:'반복문',
+  basic:'기초문법', file:'파일/기타', hangman:'행맨'
+};
+
+const ALL_Q = [
+  // ── 기초문법 ────────────────────────────────────────────────
+  {type:"mc",tag:"basic",q:"다음 중 정수형(int)을 올바르게 선언한 것은?",choices:["a = '3'","a = 3.0","a = 3","a = True"],ans:2,exp:"따옴표 없이 정수를 쓰면 int 타입이에요. 3.0은 float, True는 bool입니다."},
+  {type:"mc",tag:"basic",q:"함수를 정의할 때 사용하는 키워드는?",choices:["func","define","def","function"],ans:2,exp:"Python에서는 def 키워드로 함수를 정의해요."},
+  {type:"mc",tag:"basic",q:"다음 중 불변(immutable) 자료형은?",choices:["list","dict","set","tuple"],ans:3,exp:"tuple은 한 번 만들면 변경할 수 없는 불변 자료형이에요."},
+  {type:"mc",tag:"basic",q:"변수의 타입을 확인하는 함수는?",choices:["typeof()","type()","isinstance()","class()"],ans:1,exp:"type(변수)로 타입을 확인해요."},
+  {type:"mc",tag:"basic",q:"다음 중 주석을 작성하는 방법은?",choices:["// 주석","/* 주석 */","# 주석","-- 주석"],ans:2,exp:"Python에서 한 줄 주석은 #으로 시작해요."},
+  {type:"mc",tag:"basic",q:"함수에서 값을 반환할 때 쓰는 키워드는?",choices:["give","send","yield","return"],ans:3,exp:"return으로 함수의 결과값을 반환해요."},
+  {type:"mc",tag:"basic",q:"다음 중 논리 연산자가 아닌 것은?",choices:["and","or","not","xor"],ans:3,exp:"Python 논리 연산자는 and, or, not이에요."},
+  {type:"mc",tag:"basic",q:"모듈을 가져올 때 사용하는 키워드는?",choices:["include","require","import","load"],ans:2,exp:"import 키워드로 모듈을 가져와요."},
+  {type:"mc",tag:"basic",q:"숫자를 문자열로 변환하는 함수는?",choices:["string()","tostr()","str()","convert()"],ans:2,exp:"str(숫자)로 문자열로 변환해요."},
+  {type:"mc",tag:"basic",q:"None의 타입은?",choices:["<class 'null'>","<class 'NoneType'>","<class 'undefined'>","<class 'bool'>"],ans:1,exp:"None의 타입은 NoneType이에요."},
+  {type:"mc",tag:"basic",q:"lambda x: x * 2에 5를 전달하면 결과는?",choices:["2","5","10","오류"],ans:2,exp:"lambda x: x * 2에 5를 전달하면 5 * 2 = 10이에요."},
+  {type:"mc",tag:"basic",q:"str(2)의 결과는?",choices:["2 (정수)","'2' (문자열)","오류","None"],ans:1,exp:"str()은 숫자를 문자열로 변환해요. str(2) = '2'예요."},
+  {type:"ox",tag:"basic",q:"Python의 튜플(tuple)은 한 번 만들면 원소를 변경할 수 없다.",ans:"O",exp:"튜플은 불변(immutable) 자료형이에요."},
+  {type:"ox",tag:"basic",q:"Python에서 들여쓰기는 스타일 권고일 뿐, 문법적으로 강제되지 않는다.",ans:"X",exp:"Python은 들여쓰기가 문법이에요!"},
+  {type:"ox",tag:"basic",q:"Python에서 // 연산자는 나머지를 구한다.",ans:"X",exp:"//는 정수 나눗셈(몫)이에요. 나머지는 %를 씁니다."},
+  {type:"ox",tag:"basic",q:"Python 3에서 print는 함수다.",ans:"O",exp:"Python 2에서는 print 문이었지만 Python 3에서는 print() 함수예요."},
+  {type:"ox",tag:"basic",q:"'hello' + 3은 오류 없이 'hello3'을 출력한다.",ans:"X",exp:"문자열과 정수를 + 로 합치면 TypeError가 발생해요."},
+  {type:"ox",tag:"basic",q:"빈 딕셔너리는 {}로, 빈 세트는 set()으로 만든다.",ans:"O",exp:"{}는 딕셔너리로 인식돼요. 빈 세트는 반드시 set()으로 만들어야 합니다."},
+  {type:"fill",tag:"basic",q:"예외 처리에서 에러를 잡는 블록:\n\ntry:\n    ...\n_____ ValueError:\n    ...",ans:["except"],disp:"except",exp:"try-except 구조로 예외를 처리해요."},
+  {type:"fill",tag:"basic",q:"None 비교 시 권장 연산자:\n\nif x ___ None:",ans:["is","is not"],disp:"is",exp:"None 같은 싱글톤 객체는 == 대신 is/is not으로 비교해요."},
+  // ── 문자열 ────────────────────────────────────────────────
+  {type:"mc",tag:"string",q:"문자열 포매팅에서 변수를 바로 넣는 가장 현대적인 방법은?",choices:["'hello '+name","'hello %s'%name","f'hello {name}'","'hello'.format(name)"],ans:2,exp:"f-string(f'...')이 Python 3.6+에서 나온 가장 현대적인 방법이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'python'\nprint(len(a))",choices:["4","5","6","7"],ans:2,exp:"'python'은 p-y-t-h-o-n 6글자예요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'hello world'\nprint(a.split())",choices:["hello world","hello\\nworld","['hello', 'world']","('hello', 'world')"],ans:2,exp:"split()은 공백 기준으로 나눠서 리스트로 반환해요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'a,b,c'\nprint(a.split(','))",choices:["a b c","a\\nb\\nc","['a', 'b', 'c']","(a, b, c)"],ans:2,exp:"split(',')은 쉼표 기준으로 나눠서 리스트로 반환해요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'python'\nprint(a[2])",choices:["p","y","t","h"],ans:2,exp:"인덱스는 0부터 시작해요. p=0, y=1, t=2"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'python'\nprint(a[:3])",choices:["pyt","pyth","ython","hon"],ans:0,exp:"a[:3]은 인덱스 0,1,2 → 'pyt'. 3은 포함 안 돼요!"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'python'\nprint(a[2:])",choices:["py","pyt","thon","ython"],ans:2,exp:"a[2:]는 인덱스 2부터 끝까지 → 'thon'이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = ' hello '\nprint(a.strip())",choices:["' hello '","' hello'","'hello '","hello"],ans:3,exp:"strip()은 앞뒤 공백을 제거해요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'banana'\nprint(word.count('a'))",choices:["6","3","2","1"],ans:1,exp:"'banana'에서 'a'는 총 3번 나와요!"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'Hello\\nWorld'\nprint(a.splitlines())",choices:["Hello\\nWorld","['Hello\\nWorld']","['Hello', 'World']","두 줄 출력"],ans:2,exp:"splitlines()는 줄바꿈 기준으로 나눠 리스트로 반환해요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'I love Python'\nwords = text.split()\nprint(len(words))",choices:["13","3","4","오류"],ans:1,exp:"split() 결과는 ['I','love','Python'], 요소가 3개라 len=3이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'I love Python'\nprint(len(text))",choices:["3","12","13","14"],ans:2,exp:"공백도 문자로 셉니다. I(1)+공백+love(4)+공백+Python(6)=13이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = '010-1111-2222'\nprint(a.split('-'))",choices:["['010','1111','2222']","010 1111 2222","3","['010-1111-2222']"],ans:0,exp:"하이픈 기준으로 세 조각 리스트가 돼요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = '010-1111-2222'\nprint(len(a.split('-')))",choices:["13","3","4","오류"],ans:1,exp:"split('-') 결과 리스트의 원소가 3개예요."},
+  {type:"mc",tag:"string",q:"'a:b:c'.split(':')의 결과 자료형은?",choices:["str","tuple","list","dict"],ans:2,exp:"split()은 항상 리스트를 반환해요!"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'a b c'\nb = a.split()\nprint(b[0])",choices:["a b c","a","b","c"],ans:1,exp:"split 결과는 ['a','b','c']이고 b[0]은 첫 번째 요소 'a'예요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'banana'\nprint(word[3])",choices:["b","a","n","오류"],ans:1,exp:"b=0, a=1, n=2, a=3. 3번 인덱스는 'a'예요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'banana'\nprint(word[1:4])",choices:["ban","ana","nan","aba"],ans:1,exp:"1,2,3번 인덱스가 포함되고 4번은 제외돼요. a,n,a → 'ana'"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'banana'\nprint(word[-1])",choices:["b","n","a","오류"],ans:2,exp:"-1은 마지막 문자예요. 'banana'의 마지막은 'a'"},
+  {type:"mc",tag:"string",q:"슬라이싱 [0:3]에서 3번 인덱스는 포함되나요?",choices:["포함","제외","경우에 따라 다름","오류"],ans:1,exp:"파이썬 슬라이싱은 시작은 포함, 끝은 제외예요!"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'abcdef'\nprint(word[1:5])",choices:["abcde","bcde","bcdef","abcd"],ans:1,exp:"1~4번 인덱스(b,c,d,e)만 포함돼요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'abcdef'\nprint(word[::2])",choices:["abc","abcdef","ace","bdf"],ans:2,exp:"0,2,4번처럼 두 칸씩 건너뛰어요. a,c,e → 'ace'"},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\nword = 'abcdef'\nprint(word[::-1])",choices:["abcdef","fedcba","abc","def"],ans:1,exp:"[::-1]은 문자열을 거꾸로 뒤집어요!"},
+  {type:"mc",tag:"string",q:"len(['a', 'bb', 'ccc'])의 결과는?",choices:["6","3","1+2+3=6","오류"],ans:1,exp:"len()은 리스트 원소 개수를 세요. 원소가 3개라 3이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\na = 'python java c'.split()\nprint(len(a))",choices:["13","3","14","오류"],ans:1,exp:"split() 결과는 ['python','java','c'], 원소가 3개라 len=3이에요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'hello\\n'\nprint(text.rstrip())",choices:["hello\\n","hello ","hello","'hello'"],ans:2,exp:"rstrip()은 오른쪽 공백/줄바꿈을 제거해요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'a-b-c'\nprint(text.replace('-',' '))",choices:["a-b-c","a b c","['a','b','c']","a\\nb\\nc"],ans:1,exp:"replace('-',' ')는 하이픈을 공백으로 바꿔요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'For for FOR'\nprint(text.lower())",choices:["For for FOR","FOR FOR FOR","for for for","For For For"],ans:2,exp:"lower()는 모든 문자를 소문자로 바꿔요."},
+  {type:"mc",tag:"string",q:"출력 결과는?\n\ntext = 'For, for.'\nwords = text.lower().replace(',','').replace('.','').split()\nprint(words)",choices:["['For','for']","['for','for']","['For,','for.']","['for']"],ans:1,exp:"대소문자와 문장부호를 정리한 뒤 split해요. 결과는 ['for','for']"},
+  {type:"ox",tag:"string",q:"'hello world'.split()의 결과는 'hello world'다.",ans:"X",exp:"split() 결과는 리스트예요! ['hello', 'world']가 돼요."},
+  {type:"ox",tag:"string",q:"len(['python', 'java'])는 11이다.",ans:"X",exp:"리스트의 len은 원소 개수예요. 원소가 2개라 2예요."},
+  {type:"ox",tag:"string",q:"str.replace()는 원본 문자열을 직접 수정한다.",ans:"X",exp:"문자열은 불변이에요. replace()는 수정된 새 문자열을 반환해요."},
+  {type:"ox",tag:"string",q:"Python에서 문자열은 immutable이므로 인덱스로 개별 문자를 변경할 수 없다.",ans:"O",exp:"s[0]='H'처럼 쓰면 TypeError가 발생해요."},
+  {type:"ox",tag:"string",q:"'a' in 'banana'는 True다.",ans:"O",exp:"in 연산자는 문자열 안에 특정 문자가 포함돼 있는지 확인해요."},
+  {type:"ox",tag:"string",q:"'apple' in 'python'은 True다.",ans:"X",exp:"'apple' 전체가 'python' 안에 없으므로 False예요."},
+  {type:"fill",tag:"string",q:"문자열을 대문자로 바꾸는 메서드:\n\ns = 'hello'\nprint(s.___())",ans:["upper"],disp:"upper",exp:"str.upper()는 모든 문자를 대문자로 바꿔요."},
+  {type:"fill",tag:"string",q:"문자열 양쪽 공백 제거:\n\ns = '  hello  '\nprint(s.______())",ans:["strip"],disp:"strip",exp:"strip()은 앞뒤 공백을 모두 제거해요."},
+  {type:"fill",tag:"string",q:"문자열을 특정 구분자로 연결하는 메서드:\n\n', '.____(['a','b','c'])",ans:["join"],disp:"join",exp:"구분자.join(리스트)로 리스트 원소를 이어 붙여요."},
+  {type:"fill",tag:"string",q:"문자열 word를 한 글자씩 리스트로 바꾸는 코드:\n\nword = 'apple'\nletters = ______",ans:["list(word)"],disp:"list(word)",exp:"list(문자열)은 문자열을 한 글자씩 쪼개 리스트로 만들어요."},
+  {type:"fill",tag:"string",q:"문장 sentence를 단어 단위 리스트로 바꾸는 코드:\n\nsentence = 'hello world python'\nwords = ______",ans:["sentence.split()"],disp:"sentence.split()",exp:"공백 기준 단어 분리는 split()이에요."},
+  {type:"fill",tag:"string",q:"word='apple'에서 첫 번째 p를 출력하도록:\n\nword = 'apple'\nprint(word[___])",ans:["1"],disp:"1",exp:"apple: a=0, p=1, p=2, l=3, e=4. 첫 번째 p는 인덱스 1이에요."},
+  // ── 리스트 ────────────────────────────────────────────────
+  {type:"mc",tag:"list",q:"리스트에서 마지막 원소를 꺼내는(삭제+반환) 메서드는?",choices:["remove()","pop()","del()","discard()"],ans:1,exp:"pop()은 기본으로 마지막 원소를 제거하고 반환해요."},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\na = ['python', 'java', 'c']\nprint(len(a))",choices:["9","11","3","6"],ans:2,exp:"len()은 리스트의 원소 개수를 세요. 원소가 3개이므로 3입니다."},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\na = list('hello')\nprint(a)",choices:["hello","['hello']","['h','e','l','l','o']","('h','e','l','l','o')"],ans:2,exp:"list(문자열)은 문자 하나하나를 원소로 쪼개서 리스트로 만들어요."},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\na = ['apple', 'banana', 'cherry']\nprint(a[1])",choices:["apple","banana","cherry","오류"],ans:1,exp:"인덱스는 0부터 시작해요. a[0]='apple', a[1]='banana'"},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\nitems = ['a','b','c','d']\nprint(items[2])",choices:["a","b","c","d"],ans:2,exp:"0:a, 1:b, 2:c 이므로 items[2]='c'예요."},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\nword = 'apple'\nresult = ['_'] * len(word)\nprint(result)",choices:["_____","['_____']","['_','_','_','_','_']","'_' * 5"],ans:2,exp:"['_'] * 5는 '_'를 5개 가진 리스트를 만들어요."},
+  {type:"mc",tag:"list",q:"리스트를 정렬하는 메서드는?",choices:["order()","sort()","arrange()","sorted()"],ans:1,exp:"list.sort()는 리스트를 제자리에서 정렬해요."},
+  {type:"mc",tag:"list",q:"list('abc')의 결과 자료형은?",choices:["str","tuple","list","dict"],ans:2,exp:"결과는 ['a','b','c'] 형태의 리스트예요."},
+  {type:"mc",tag:"list",q:"출력 결과는?\n\na = list('abc')\nprint(a[1])",choices:["a","b","c","오류"],ans:1,exp:"인덱스는 0부터 시작해요. a[0]='a', a[1]='b'"},
+  {type:"ox",tag:"list",q:"리스트의 sort()는 새 리스트를 반환한다.",ans:"X",exp:"sort()는 제자리 정렬로 None을 반환해요."},
+  {type:"ox",tag:"list",q:"빈 리스트 []는 bool로 변환하면 False다.",ans:"O",exp:"빈 컨테이너와 0, None은 모두 False로 변환돼요."},
+  {type:"ox",tag:"list",q:"len(['python', 'java', 'c'])의 결과는 11이다.",ans:"X",exp:"리스트 안의 글자 수가 아니라 요소 개수를 세요. 요소가 3개라 len=3이에요."},
+  {type:"ox",tag:"list",q:"fruits = ['apple','banana','cherry']에서 fruits[1]은 'apple'이다.",ans:"X",exp:"인덱스는 0부터 시작해요. fruits[0]='apple', fruits[1]='banana'예요."},
+  {type:"fill",tag:"list",q:"리스트 끝에 원소를 추가하는 메서드:\n\nmy_list.___('새 원소')",ans:["append"],disp:"append",exp:"append()는 리스트 끝에 원소를 추가해요."},
+  {type:"fill",tag:"list",q:"리스트 컴프리헨션으로 0~4의 제곱수:\n\nresult = [___ for i in range(5)]",ans:["i**2","i*i"],disp:"i**2",exp:"[표현식 for 변수 in 반복가능객체] 패턴이에요."},
+  {type:"fill",tag:"list",q:"리스트 내림차순 정렬:\n\nmy_list.sort(reverse=____)",ans:["True","true"],disp:"True",exp:"reverse=True로 내림차순 정렬을 해요."},
+  // ── 반복문 ────────────────────────────────────────────────
+  {type:"mc",tag:"loop",q:"for 루프로 1부터 5까지(포함) 출력하려면?",choices:["range(1,5)","range(5)","range(1,6)","range(0,5)"],ans:2,exp:"range(start, stop)는 stop을 포함하지 않아요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'python'\nfor i in range(len(word)):\n    print(i)",choices:["p y t h o n","0 1 2 3 4 5","1 2 3 4 5 6","python을 6번"],ans:1,exp:"print(i)는 문자가 아니라 인덱스 숫자를 출력해요. 문자를 출력하려면 print(word[i])를 써야 해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'python'\nfor i in range(len(word)):\n    print(word[i])",choices:["0 1 2 3 4 5","python 한 번","p y t h o n (한 줄씩)","오류"],ans:2,exp:"word[i]로 각 위치 문자를 출력해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'python'\nfor i, ch in enumerate(word):\n    print(i, ch)",choices:["p y t h o n","0 p / 1 y / 2 t ...","0 1 2 3 4 5","오류"],ans:1,exp:"enumerate는 (인덱스, 문자) 쌍을 반환해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'banana'\nfor i, ch in enumerate(word):\n    if ch == 'a':\n        print(i)",choices:["0 2 4","1 3 5","0 1 2","3"],ans:1,exp:"'banana'에서 'a'의 위치는 1, 3, 5예요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nfor i in range(3):\n    print(i)",choices:["1 2 3","0 1 2","0 1 2 3","오류"],ans:1,exp:"range(3)은 0, 1, 2예요. 3은 포함되지 않아요."},
+  {type:"mc",tag:"loop",q:"range(4)가 만들어내는 숫자는?",choices:["1,2,3,4","0,1,2,3,4","0,1,2,3","1,2,3"],ans:2,exp:"range(n)은 항상 0부터 시작하고 n은 포함하지 않아요."},
+  {type:"mc",tag:"loop",q:"range(2, 5)가 만들어내는 숫자는?",choices:["2,3,4,5","2,3,4","1,2,3,4","2,3"],ans:1,exp:"range(start, stop)은 start부터 stop-1까지예요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nfor i in range(1,4):\n    print(i)",choices:["1 2 3 4","1 2 3","0 1 2 3","0 1 2"],ans:1,exp:"range(1,4)는 1부터 3까지예요. 4는 제외돼요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nfor i in range(0,6,2):\n    print(i)",choices:["0 2 4 6","0 2 4","1 3 5","0 1 2"],ans:1,exp:"세 번째 값 2는 step이에요. 0,2,4가 출력돼요."},
+  {type:"mc",tag:"loop",q:"아래 두 코드의 차이는?\n\n① print(i)\n② print(word[i])",choices:["둘 다 같은 결과","①은 숫자, ②는 문자","①은 문자, ②는 숫자","둘 다 오류"],ans:1,exp:"i는 인덱스 숫자예요. word[i]는 그 위치의 문자예요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'cat'\nfor i in range(len(word)):\n    print(i)",choices:["c a t","0 1 2","1 2 3","cat을 3번"],ans:1,exp:"print(i)는 문자가 아니라 인덱스 숫자를 출력해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'cat'\nfor i in range(len(word)):\n    print(word[i])",choices:["0 1 2","c a t (한 줄씩)","cat","오류"],ans:1,exp:"print(word[i])는 i번째 위치의 문자를 출력해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\na = range(5)\nprint(list(a))",choices:["[1,2,3,4,5]","[0,1,2,3,4]","[0,1,2,3,4,5]","range(5)"],ans:1,exp:"range(5)는 0부터 4까지예요. 5는 포함하지 않아요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'apple'\nresult = ''\nfor ch in word:\n    result += '_'\nprint(result)",choices:["apple","_apple","_____","[_,_,_,_,_]"],ans:2,exp:"apple은 5글자라 '_'가 5번 누적돼요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'apple'\nresult = ''\nfor i in range(len(word)):\n    result += str(i)\nprint(result)",choices:["apple","01234","12345","0 1 2 3 4"],ans:1,exp:"str(i)는 인덱스 숫자를 문자열로 바꿔요. 0,1,2,3,4가 누적돼 '01234'가 돼요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nword = 'dog'\nresult = ''\nfor i in range(len(word)):\n    result += word[i]\nprint(result)",choices:["012","d o g","dog","오류"],ans:2,exp:"word[i]는 각 위치의 문자를 가져와요. d,o,g가 누적돼 'dog'가 돼요."},
+  {type:"mc",tag:"loop",q:"for ch in 'apple'에서 ch에 들어오는 값은?",choices:["0,1,2,3,4","a,p,p,l,e","'apple' 전체","오류"],ans:1,exp:"for ch in 문자열은 ch에 문자가 하나씩 들어와요."},
+  {type:"mc",tag:"loop",q:"인덱스 번호(0,1,2...)를 출력하려면?",choices:["for i in word:","for i in range(len(word)):","for i in list(word):","for i in enumerate(word):"],ans:1,exp:"인덱스 숫자를 얻으려면 range(len(word))를 써야 해요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nanswer = 'apple'\nguess = 'p'\nfor i in range(len(answer)):\n    if answer[i] == guess:\n        print(i)",choices:["0","1 2","1","2"],ans:1,exp:"apple에서 p는 1번과 2번 위치에 있어요."},
+  {type:"mc",tag:"loop",q:"출력 결과는?\n\nanswer = 'banana'\nguess = 'a'\nfor i in range(len(answer)):\n    if answer[i] == guess:\n        print(i)",choices:["0 2 4","1 3 5","3","1 2 3"],ans:1,exp:"banana에서 a는 1,3,5번 위치에 있어요."},
+  {type:"ox",tag:"loop",q:"range(5)는 1,2,3,4,5를 반환한다.",ans:"X",exp:"range(5)는 0,1,2,3,4예요! 0부터 시작하고 5는 포함하지 않아요."},
+  {type:"ox",tag:"loop",q:"for i in 'hello': print(i)는 0,1,2,3,4를 출력한다.",ans:"X",exp:"for i in 문자열은 i에 문자가 들어와요. h,e,l,l,o가 출력돼요."},
+  {type:"ox",tag:"loop",q:"word = 'hello'일 때, for i in range(len(word)): print(i)의 출력은 h e l l o다.",ans:"X",exp:"print(i)는 인덱스 숫자 0,1,2,3,4를 출력해요."},
+  {type:"ox",tag:"loop",q:"정수에 for 루프를 쓰면 에러가 발생한다.\n\nshow_index = 3\nfor i in show_index:\n    print(i)",ans:"O",exp:"정수는 iterable이 아니에요. TypeError가 발생합니다."},
+  {type:"ox",tag:"loop",q:"range()는 리스트를 반환한다.",ans:"X",exp:"range()는 range 객체를 반환해요."},
+  {type:"ox",tag:"loop",q:"range(len(word))에서 len(word)-1을 써야 마지막 인덱스까지 포함된다.",ans:"X",exp:"range의 끝값은 자동으로 제외되므로 len(word)만 쓰면 돼요."},
+  {type:"fill",tag:"loop",q:"word의 모든 인덱스를 출력하도록:\n\nword = 'apple'\nfor i in ______:\n    print(i)",ans:["range(len(word))"],disp:"range(len(word))",exp:"글자 인덱스는 0부터 len(word)-1까지이므로 range(len(word))를 써요."},
+  {type:"fill",tag:"loop",q:"인덱스와 글자를 동시에 출력:\n\nfor i, ch in ______('apple'):\n    print(i, ch)",ans:["enumerate"],disp:"enumerate",exp:"enumerate(문자열)는 (인덱스, 글자)를 줘요."},
+  {type:"fill",tag:"loop",q:"word의 각 문자(글자)를 한 줄씩 출력하려면:\n\nword = 'python'\nfor i in range(len(word)):\n    print(______)",ans:["word[i]"],disp:"word[i]",exp:"word[i]는 i번째 위치의 문자를 가져와요. i만 쓰면 숫자가 출력돼요!"},
+  {type:"fill",tag:"loop",q:"빈 문자열에 문자를 하나씩 이어 붙이기:\n\nresult = ''\nfor ch in 'abc':\n    result ___ ch\nprint(result)",ans:["+="],disp:"+=",exp:"문자열 누적은 += 를 써요."},
+  {type:"fill",tag:"loop",q:"word의 각 문자를 result에 누적하려면:\n\nword = 'cat'\nresult = ''\nfor i in range(len(word)):\n    result += ______",ans:["word[i]"],disp:"word[i]",exp:"word[i]는 i번째 문자예요. str(i)를 쓰면 숫자가 누적돼요!"},
+  // ── 파일/기타 ────────────────────────────────────────────
+  {type:"mc",tag:"file",q:"read()의 반환 자료형은?",choices:["list","str","dict","tuple"],ans:1,exp:"read()는 파일 전체 내용을 하나의 문자열(str)로 읽어요."},
+  {type:"mc",tag:"file",q:"readlines()의 반환 자료형은?",choices:["str","list","dict","set"],ans:1,exp:"readlines()는 파일을 줄 단위 문자열 리스트로 읽어요."},
+  {type:"mc",tag:"file",q:"Counter(word)의 출력 형태는?\n\nfrom collections import Counter\nword = 'banana'\nprint(Counter(word))",choices:["6","{'b':1,'a':3,'n':2}","Counter({'a':3,'n':2,'b':1})","['b','a','n','a','n','a']"],ans:2,exp:"Counter는 각 문자의 등장 횟수를 빈도 순으로 보여줘요."},
+  {type:"ox",tag:"file",q:"f.read()로 읽은 text의 자료형은 str이다.",ans:"O",exp:"f.read()는 파일 내용 전체를 하나의 문자열(str)로 반환해요."},
+  {type:"ox",tag:"file",q:"f.readlines()로 읽은 lines의 자료형은 str이다.",ans:"X",exp:"readlines()는 각 줄을 원소로 가진 리스트(list)를 반환해요!"},
+  {type:"fill",tag:"file",q:"파일을 안전하게 열고 닫는 패턴:\n\n____ open('file.txt') as f:",ans:["with"],disp:"with",exp:"with 구문은 파일을 자동으로 닫아줘서 안전해요."},
+  {type:"fill",tag:"file",q:"파일을 열고 전체 내용을 읽기:\n\nwith open('test.txt', 'r') as f:\n    text = ______",ans:["f.read()"],disp:"f.read()",exp:"with를 쓰면 close를 직접 안 써도 돼요."},
+  // ── 행맨 ─────────────────────────────────────────────────
+  {type:"mc",tag:"hangman",q:"출력 결과는?\n\nanswer = 'apple'\nresult = ['_'] * len(answer)\nguess = 'p'\nfor i in range(len(answer)):\n    if answer[i] == guess:\n        result[i] = guess\nprint(result)",choices:["['_','p','_','_','_']","['_','p','p','_','_']","['p','p','_','_','_']","['_','_','p','_','_']"],ans:1,exp:"p가 1번과 2번 위치에 있으므로 둘 다 공개돼요."},
+  {type:"mc",tag:"hangman",q:"출력 결과는?\n\nanswer = 'banana'\nresult = ['_'] * len(answer)\nguess = 'a'\nfor i in range(len(answer)):\n    if answer[i] == guess:\n        result[i] = guess\nprint(result)",choices:["['_','a','_','a','_','a']","['a','_','a','_','a','_']","['_','a','a','_','_','_']","['a','a','a','_','_','_']"],ans:0,exp:"a가 1,3,5번 위치에 있어요."},
+  {type:"mc",tag:"hangman",q:"출력 결과는?\n\nanswer = 'apple'\nshow_index = 1\nresult = ''\nfor i in range(len(answer)):\n    if i == show_index:\n        result += answer[i]\n    else:\n        result += '_'\nprint(result)",choices:["a____","_p___","__p__","_____"],ans:1,exp:"show_index=1이면 1번 위치 'p'만 공개돼요."},
+  {type:"mc",tag:"hangman",q:"출력 결과는?\n\nanswer = 'apple'\nshow_index = 0\nresult = ''\nfor i in range(len(answer)):\n    if i == show_index:\n        result += answer[i]\n    else:\n        result += '_'\nprint(result)",choices:["a____","_p___","apple","_____"],ans:0,exp:"show_index=0이면 0번 위치 'a'만 공개돼요."},
+  {type:"mc",tag:"hangman",q:"show_index=2 vs guess='p' 방식의 차이는?",choices:["둘 다 같음","show_index는 딱 한 위치, guess는 같은 문자 전부","guess는 딱 한 위치, show_index는 전부","둘 다 전체 공개"],ans:1,exp:"show_index는 특정 번호 위치 하나만, guess는 그 문자가 있는 모든 위치를 공개해요."},
+  {type:"mc",tag:"hangman",q:"random.randint(0, 5)가 반환할 수 있는 값은?",choices:["0,1,2,3,4","1,2,3,4,5","0,1,2,3,4,5","0,1,2,3,4,5,6"],ans:2,exp:"randint(a,b)는 a와 b를 모두 포함해요!"},
+  {type:"mc",tag:"hangman",q:"출력 결과는?\n\nanswer = 'banana'\nguess = 'n'\nfor i in range(len(answer)):\n    if answer[i] == guess:\n        print(i)",choices:["0","2 4","1 3 5","2"],ans:1,exp:"banana에서 n의 위치: b=0,a=1,n=2,a=3,n=4,a=5. n은 2번과 4번이에요."},
+  {type:"ox",tag:"hangman",q:"행맨에서 guess in answer가 True라는 것은 입력한 글자가 정답 안에 있다는 뜻이다.",ans:"O",exp:"예: 'a' in 'banana'는 True예요."},
+  {type:"ox",tag:"hangman",q:"random.randint(0,5)는 0부터 4까지 반환한다.",ans:"X",exp:"randint는 양 끝값을 모두 포함해요. 0,1,2,3,4,5를 반환해요."},
+  {type:"ox",tag:"hangman",q:"if i == show_index는 show_index와 같은 위치가 여러 개 있으면 여러 개 공개된다.",ans:"X",exp:"show_index는 숫자 하나라 딱 한 위치만 공개돼요."},
+  {type:"fill",tag:"hangman",q:"Counter를 import하는 코드:\n\nfrom collections import ______",ans:["Counter"],disp:"Counter",exp:"Counter는 collections 모듈 안에 있어요."},
+  {type:"fill",tag:"hangman",q:"리스트에서 요소 하나를 랜덤 선택:\n\nimport random\nwords = ['apple','banana','python']\nanswer = random.______(words)",ans:["choice"],disp:"choice",exp:"random.choice(리스트)는 리스트에서 임의의 원소 하나를 반환해요."},
+  {type:"fill",tag:"hangman",q:"정답 단어에서 guess 문자가 있는 모든 위치를 공개:\n\nfor i in range(len(answer)):\n    if ______ == guess:\n        result[i] = guess",ans:["answer[i]"],disp:"answer[i]",exp:"answer[i]는 i번째 위치의 문자예요."},
+  {type:"fill",tag:"hangman",q:"0부터 5까지 정수 중 하나를 랜덤으로 반환:\n\nimport random\nn = random._______(0, 5)",ans:["randint"],disp:"randint",exp:"random.randint(a, b)는 a 이상 b 이하의 정수를 랜덤으로 반환해요."},
+  // ── 오답패턴: result += vs append ──────────────────────
+  {type:"mc",tag:"string",q:"result = ''일 때 문자를 추가하는 올바른 방법은?",choices:["result.append('a')","result += 'a'","result.add('a')","result.insert('a')"],ans:1,exp:"문자열에는 += 를 써요. append()는 리스트에서만 써요!"},
+  {type:"mc",tag:"list",q:"result = []일 때 원소를 추가하는 올바른 방법은?",choices:["result += 'a'","result + 'a'","result.append('a')","result.add('a')"],ans:2,exp:"리스트에는 append()를 써요."},
+  {type:"ox",tag:"string",q:"result = ''일 때 result.append('a')는 정상 작동한다.",ans:"X",exp:"append()는 리스트 메서드예요. 문자열에 쓰면 AttributeError가 발생해요."},
+];
+
+// ══ localStorage 키 ══
+const STORAGE_WRONG = 'pq_wrong_counts'; // {qIndex: count}
+const STORAGE_BEST  = 'pq_best';
+
+let TOTAL=20, selectedTags=new Set(['all']), questions=[], current=0, score=0, answered=false, wrongQ=[];
+let wrongCounts = {};
+
+function loadData(){
+  try{ wrongCounts = JSON.parse(localStorage.getItem(STORAGE_WRONG)||'{}'); }catch(e){ wrongCounts={}; }
+  try{ const b=localStorage.getItem(STORAGE_BEST); document.getElementById('best-score').textContent=b?b+'점':'—'; }catch(e){}
+  // 오답 누적 수
+  const total = Object.values(wrongCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('wrong-count-home').textContent = total;
+}
+
+function saveWrong(qIdx){
+  wrongCounts[qIdx] = (wrongCounts[qIdx]||0) + 1;
+  try{ localStorage.setItem(STORAGE_WRONG, JSON.stringify(wrongCounts)); }catch(e){}
+}
+
+function saveBest(s){
+  try{ const b=parseInt(localStorage.getItem(STORAGE_BEST)||'0'); if(s>b) localStorage.setItem(STORAGE_BEST,s); }catch(e){}
+}
+
+function toggleTag(tag,btn){
+  if(tag==='all'||tag==='wrong'){
+    selectedTags=new Set([tag]);
+    document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    selectedTags.delete('all'); selectedTags.delete('wrong');
+    document.querySelector('.tag-all').classList.remove('active');
+    document.querySelector('.tag-wrong').classList.remove('active');
+    if(selectedTags.has(tag)){selectedTags.delete(tag);btn.classList.remove('active');}
+    else{selectedTags.add(tag);btn.classList.add('active');}
+    if(selectedTags.size===0){selectedTags.add('all');document.querySelector('.tag-all').classList.add('active');}
+  }
+}
+
+function setN(n,btn){
+  TOTAL=n;
+  document.querySelectorAll('.n-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(id){['screen-home','screen-quiz','screen-result','screen-wrongnote'].forEach(s=>{document.getElementById(s).style.display=s===id?'flex':'none';});}
+
+function startQuiz(){
+  let pool;
+  if(selectedTags.has('wrong')){
+    // 틀린 문제만
+    pool = ALL_Q.filter((_,i)=>wrongCounts[i]>0);
+    if(pool.length===0){alert('아직 틀린 문제가 없어요! 먼저 퀴즈를 풀어봐요 😊');return;}
+    // 인덱스 보존
+    pool = ALL_Q.map((q,i)=>({...q,_idx:i})).filter((_,i)=>wrongCounts[i]>0);
+  } else if(selectedTags.has('all')){
+    pool = ALL_Q.map((q,i)=>({...q,_idx:i}));
+  } else {
+    pool = ALL_Q.map((q,i)=>({...q,_idx:i})).filter(q=>selectedTags.has(q.tag));
+    if(pool.length===0) pool = ALL_Q.map((q,i)=>({...q,_idx:i}));
+  }
+  questions = shuffle(pool).slice(0, Math.min(TOTAL, pool.length));
+  current=0; score=0; answered=false; wrongQ=[];
+  show('screen-quiz'); render();
+}
+
+function render(){
+  if(current>=questions.length){showResult();return;}
+  const q=questions[current];
+  document.getElementById('hdr-num').textContent=`${current+1}/${questions.length}`;
+  document.getElementById('prog').style.width=`${((current+1)/questions.length)*100}%`;
+  document.getElementById('hdr-score').textContent=`${score}점`;
+  document.getElementById('next-btn').style.display='none';
+
+  const tl=q.type==='mc'?'객관식':q.type==='fill'?'빈칸 채우기':'O / X';
+  const tc=q.type==='mc'?'chip-mc':q.type==='fill'?'chip-fill':'chip-ox';
+  const parts=q.q.split('\n\n');
+  const qtxt=parts[0], code=parts[1]||'';
+  const unitName = TAG_NAMES[q.tag]||q.tag;
+  const wc = q._idx!==undefined ? (wrongCounts[q._idx]||0) : 0;
+  const wcBadge = wc>0 ? `<span class="wrong-count-badge">❌ ${wc}번 틀림</span>` : '';
+
+  let body='';
+  if(q.type==='mc'){
+    body=`<div class="choices">${q.choices.map((c,i)=>`<button class="choice" onclick="checkMC(${i})" id="ch${i}"><span class="choice-lbl">${['A','B','C','D'][i]}</span>${c}</button>`).join('')}</div>`;
+  }else if(q.type==='fill'){
+    body=`<div class="fill-wrap"><input class="fill-input" id="fill-in" placeholder="정답 입력..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkFill()"><button class="confirm-btn" onclick="checkFill()">확인</button></div>`;
+  }else{
+    body=`<div class="ox-row"><button class="ox-btn" onclick="checkOX('O')" id="ox-O"><span>⭕</span><span>O</span></button><button class="ox-btn" onclick="checkOX('X')" id="ox-X"><span>❌</span><span>X</span></button></div>`;
+  }
+
+  document.getElementById('quiz-body').innerHTML=`
+    <div class="unit-label">${unitName} ${wcBadge}</div>
+    <span class="type-chip ${tc}">${tl}</span>
+    <div class="q-text">${qtxt}</div>
+    ${code?`<div class="q-code">${code}</div>`:''}
+    ${body}
+    <div class="feedback-box" id="fb"></div>`;
+  if(q.type==='fill') setTimeout(()=>{const el=document.getElementById('fill-in');if(el)el.focus();},100);
+}
+
+function showFb(correct,q){
+  const fb=document.getElementById('fb');
+  fb.style.display='block';
+  fb.className='feedback-box '+(correct?'correct':'wrong');
+  const ans=q.type==='fill'?q.disp:q.type==='mc'?q.choices[q.ans]:q.ans;
+  fb.innerHTML=`<div class="fb-title">${correct?'✅ 정답!':'❌ 오답!'}</div>${!correct?`<div class="fb-ans">정답: ${ans}</div>`:''}<div class="fb-exp">${q.exp}</div>`;
+  const nb=document.getElementById('next-btn');
+  nb.textContent=current+1<questions.length?'다음 문제 →':'결과 보기';
+  nb.style.display='block';
+}
+
+function checkMC(i){
+  if(answered)return; answered=true;
+  const q=questions[current];
+  [0,1,2,3].forEach(idx=>{const b=document.getElementById('ch'+idx);if(!b)return;b.disabled=true;if(idx===q.ans)b.classList.add('correct');else if(idx===i&&i!==q.ans)b.classList.add('wrong');});
+  const ok=i===q.ans;
+  if(ok)score++; else{ wrongQ.push(q); if(q._idx!==undefined)saveWrong(q._idx); }
+  showFb(ok,q);
+}
+function checkFill(){
+  if(answered)return; answered=true;
+  const q=questions[current];
+  const val=document.getElementById('fill-in').value.trim();
+  const ok=q.ans.map(a=>a.toLowerCase()).includes(val.toLowerCase());
+  document.getElementById('fill-in').disabled=true;
+  if(ok)score++; else{ wrongQ.push(q); if(q._idx!==undefined)saveWrong(q._idx); }
+  showFb(ok,q);
+}
+function checkOX(v){
+  if(answered)return; answered=true;
+  const q=questions[current];
+  ['O','X'].forEach(ox=>{const b=document.getElementById('ox-'+ox);b.disabled=true;if(ox===q.ans)b.classList.add('correct');else if(ox===v&&v!==q.ans)b.classList.add('wrong');});
+  const ok=v===q.ans;
+  if(ok)score++; else{ wrongQ.push(q); if(q._idx!==undefined)saveWrong(q._idx); }
+  showFb(ok,q);
+}
+function nextQ(){current++;answered=false;render();}
+
+// ══ 결과 화면 ══
+function showResult(){
+  saveBest(score); loadData();
+  const total=questions.length, pct=Math.round(score/total*100);
+  const emoji=pct===100?'🏆':pct>=80?'🌟':pct>=60?'👍':'📚';
+  const msg=pct===100?'완벽해요! 만점입니다!':pct>=80?'훌륭해요! 거의 다 맞혔네요.':pct>=60?'좋아요! 조금만 더 연습하면 돼요.':'틀린 문제를 꼭 복습해봐요!';
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-score').innerHTML=`${score}<span class="result-denom">/${total}</span>`;
+  document.getElementById('res-pct').textContent=`정답률 ${pct}%`;
+  document.getElementById('res-msg').textContent=msg;
+
+  let wrongHTML='';
+  if(wrongQ.length>0){
+    wrongHTML=`
+      <div class="wrong-section-header">
+        <span class="wrong-section-title">틀린 문제 (${wrongQ.length}개)</span>
+        <button class="select-all-btn" onclick="selectAll()">전체 선택</button>
+      </div>
+      <div class="wrong-items-list" id="wrong-items-list">
+        ${wrongQ.map((q,i)=>{
+          const unitName=TAG_NAMES[q.tag]||q.tag;
+          const wc=q._idx!==undefined?(wrongCounts[q._idx]||0):0;
+          const qtxt=q.q.split('\n\n')[0].slice(0,55)+(q.q.split('\n\n')[0].length>55?'...':'');
+          const ans=q.type==='fill'?q.disp:q.type==='mc'?q.choices[q.ans]:q.ans;
+          return `<div class="wrong-item-card" id="wcard${i}" onclick="toggleSelect(${i})">
+            <div class="wrong-item-check" id="wcheck${i}"></div>
+            <div class="wrong-item-content">
+              <div class="wrong-item-unit">${unitName}</div>
+              <div class="wrong-item-q">${qtxt}</div>
+              <div class="wrong-item-cnt">누적 ${wc}번 틀림</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="copy-selected-btn" id="copy-btn" onclick="copySelected()">📋 선택한 문제 Claude에게 보내기</button>`;
+  }
+  document.getElementById('wrong-section').innerHTML=wrongHTML;
+  window._selectedWrong = new Set();
+  show('screen-result');
+}
+
+function toggleSelect(i){
+  const card=document.getElementById('wcard'+i);
+  const check=document.getElementById('wcheck'+i);
+  if(window._selectedWrong.has(i)){
+    window._selectedWrong.delete(i);
+    card.classList.remove('selected');
+    check.textContent='';
+  } else {
+    window._selectedWrong.add(i);
+    card.classList.add('selected');
+    check.textContent='✓';
+  }
+  const btn=document.getElementById('copy-btn');
+  if(btn) btn.className='copy-selected-btn'+(window._selectedWrong.size>0?' visible':'');
+}
+
+function selectAll(){
+  wrongQ.forEach((_,i)=>{
+    window._selectedWrong.add(i);
+    const card=document.getElementById('wcard'+i);
+    const check=document.getElementById('wcheck'+i);
+    if(card) card.classList.add('selected');
+    if(check) check.textContent='✓';
+  });
+  const btn=document.getElementById('copy-btn');
+  if(btn) btn.className='copy-selected-btn visible';
+}
+
+function copySelected(){
+  const sel=[...window._selectedWrong];
+  if(sel.length===0){alert('문제를 선택해주세요!');return;}
+  const date=new Date().toLocaleDateString('ko-KR');
+  let text=`[Python 퀴즈 오답 기록 - ${date}]\n선택한 문제 ${sel.length}개\n\n`;
+  sel.forEach((i,n)=>{
+    const q=wrongQ[i];
+    const unitName=TAG_NAMES[q.tag]||q.tag;
+    const ans=q.type==='fill'?q.disp:q.type==='mc'?q.choices[q.ans]:q.ans;
+    const wc=q._idx!==undefined?(wrongCounts[q._idx]||0):0;
+    text+=`${n+1}. [${unitName}] ${q.q.split('\n\n')[0]}\n`;
+    text+=`   정답: ${ans}\n`;
+    text+=`   해설: ${q.exp}\n`;
+    text+=`   누적 틀린 횟수: ${wc}번\n\n`;
+  });
+  text+=`---\nClaude에게: 위 오답 패턴을 분석해서 비슷한 문제를 각 문제당 3~5개씩 만들어 퀴즈 앱에 추가해주세요!`;
+
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    if(btn){btn.textContent='✅ 복사됐어요! Claude에게 붙여넣기 하세요';setTimeout(()=>{btn.textContent='📋 선택한 문제 Claude에게 보내기';},3000);}
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.cssText='position:fixed;top:10%;left:5%;width:90vw;height:70vh;z-index:999;background:#1a1a24;color:#e8e8f0;border:1px solid #7c6ff7;border-radius:12px;padding:1rem;font-size:12px;';
+    document.body.appendChild(ta);
+    ta.select();
+    const close=document.createElement('button');
+    close.textContent='전체 선택 후 복사하고 닫기';
+    close.style.cssText='position:fixed;top:calc(10% - 44px);left:5%;z-index:1000;padding:10px 16px;background:#7c6ff7;color:#fff;border:none;border-radius:8px;font-size:13px;width:90vw;';
+    close.onclick=()=>{ta.select();document.execCommand('copy');document.body.removeChild(ta);document.body.removeChild(close);};
+    document.body.appendChild(close);
+  });
+}
+
+// ══ 오답 노트 ══
+function showWrongNote(){
+  const body=document.getElementById('note-body');
+  const wrongList=ALL_Q.map((q,i)=>({...q,_idx:i,_cnt:wrongCounts[i]||0})).filter(q=>q._cnt>0).sort((a,b)=>b._cnt-a._cnt);
+  if(wrongList.length===0){
+    body.innerHTML=`<div class="note-empty">아직 틀린 문제가 없어요! 🎉<br>퀴즈를 풀면 여기에 기록돼요.</div>`;
+  } else {
+    body.innerHTML=wrongList.map(q=>{
+      const unitName=TAG_NAMES[q.tag]||q.tag;
+      const ans=q.type==='fill'?q.disp:q.type==='mc'?q.choices[q.ans]:q.ans;
+      const qtxt=q.q.split('\n\n')[0].slice(0,60)+(q.q.split('\n\n')[0].length>60?'...':'');
+      return `<div class="note-item">
+        <div class="note-item-top">
+          <span class="note-item-unit">${unitName}</span>
+          <span class="note-item-cnt">❌ ${q._cnt}번 틀림</span>
+        </div>
+        <div class="note-item-q">${qtxt}</div>
+        <div class="note-item-ans">정답: ${ans}</div>
+      </div>`;
+    }).join('');
+  }
+  show('screen-wrongnote');
+}
+
+function retryQuiz(){startQuiz();}
+function goHome(){show('screen-home');loadData();}
+
+loadData();
+show('screen-home');
+</script>
+</body>
+</html>
